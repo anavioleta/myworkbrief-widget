@@ -1,0 +1,21 @@
+{
+  "name": "My Work Brief",
+  "id": "1607364724559789558",
+  "api": "1.0.0",
+  "main": "dist/code.js",
+  "capabilities": [],
+  "enableProposedApi": false,
+  "documentAccess": "dynamic-page",
+  "editorType": [
+    "figma",
+    "figjam"
+  ],
+  "containsWidget": true,
+  "widgetApi": "1.0.0",
+  "networkAccess": {
+    "allowedDomains": [
+      "*"
+    ],
+    "reasoning": "El widget abre enlaces externos (Jira, prototipos de Figma, etc.) mediante figma.openExternal()."
+  }
+}
