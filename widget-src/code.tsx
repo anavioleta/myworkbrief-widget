@@ -420,7 +420,7 @@ function TaskCard() {
           onClick={() => figma.openExternal(uiUrl)}
         >
           <SVG src={LINK_ICON} width={16} height={16} />
-          <Text fontSize={16} fontWeight={500} fill={toHexSafe('FFFFFF', FB)}>Visitar UI</Text>
+          <Text fontSize={16} fontWeight={500} fill={toHexSafe('FFFFFF', FB)}>Visitar prototipo de UI</Text>
         </AutoLayout>
       ),
     })
@@ -440,7 +440,7 @@ function TaskCard() {
           onClick={() => figma.openExternal(uxUrl)}
         >
           <SVG src={LINK_ICON} width={16} height={16} />
-          <Text fontSize={16} fontWeight={500} fill={toHexSafe('FFFFFF', FB)}>Visitar UX</Text>
+          <Text fontSize={16} fontWeight={500} fill={toHexSafe('FFFFFF', FB)}>Visitar prototipo de UX</Text>
         </AutoLayout>
       ),
     })
