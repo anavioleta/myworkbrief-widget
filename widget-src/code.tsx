@@ -177,6 +177,7 @@ function TaskCard() {
     const d = DESIGNERS.find((x) => x.key === designerKey)
     return (
       <AutoLayout
+        name="Task Card"
         direction="vertical"
         width={CARD_W}
         cornerRadius={32}
@@ -186,6 +187,7 @@ function TaskCard() {
         fill={toHexSafe(t.cardBg, FB)}
       >
         <AutoLayout
+          name="Header / Type Badge"
           width="fill-parent"
           height={50}
           fill={toHexSafe(TASK_STYLES[taskType]?.fill ?? 'E3B2FB', FB)}
@@ -196,23 +198,23 @@ function TaskCard() {
             {TASK_STYLES[taskType]?.label ?? 'UI  Task'}
           </Text>
         </AutoLayout>
-        <AutoLayout direction="vertical" width="fill-parent" padding={PADDING} spacing={GAP}>
-          <AutoLayout direction="vertical" width="fill-parent" spacing={8}>
+        <AutoLayout name="Form" direction="vertical" width="fill-parent" padding={PADDING} spacing={GAP}>
+          <AutoLayout name="Form / Title Field" direction="vertical" width="fill-parent" spacing={8}>
             <Text fontSize={14} fill={toHexSafe(t.label, FB)}>Title *</Text>
             <Input
               value={title}
               onTextEditEnd={(ev) => setTitle(ev.characters)}
               placeholder="Añade el título..."
               fontSize={14}
-              fill={toHexSafe(t.fieldText, FB)}
+              fill={toHexSafe(t.value, FB)}
               width="fill-parent"
               inputFrameProps={inputFrame()}
             />
           </AutoLayout>
-          <AutoLayout direction="vertical" width="fill-parent" spacing={8}>
-            <AutoLayout direction="horizontal" width="fill-parent" verticalAlignItems="center">
+          <AutoLayout name="Form / Description Field" direction="vertical" width="fill-parent" spacing={8}>
+            <AutoLayout name="Form / Description Label Row" direction="horizontal" width="fill-parent" verticalAlignItems="center">
               <Text fontSize={14} fill={toHexSafe(t.label, FB)}>Description</Text>
-              <AutoLayout width="fill-parent" height={1} />
+              <AutoLayout name="Form / Description Label Row / Spacer" width="fill-parent" height={1} />
               <Text fontSize={12} fill={toHexSafe(t.label, FB)}>{(description || '').length}/350</Text>
             </AutoLayout>
             <Input
@@ -220,86 +222,88 @@ function TaskCard() {
               onTextEditEnd={(ev) => setDescription((ev.characters || '').slice(0, 350))}
               placeholder="Añade la descripción breve del proyecto..."
               fontSize={14}
-              fill={toHexSafe(t.fieldText, FB)}
+              fill={toHexSafe(t.value, FB)}
               width="fill-parent"
               height={80}
               inputBehavior="multiline"
               inputFrameProps={inputFrameDescription()}
             />
           </AutoLayout>
-          <AutoLayout direction="horizontal" width="fill-parent" spacing={GAP}>
-            <AutoLayout direction="vertical" width="fill-parent" spacing={8}>
+          <AutoLayout name="Form / Meta Row" direction="horizontal" width="fill-parent" spacing={GAP}>
+            <AutoLayout name="Form / Created Date Field" direction="vertical" width="fill-parent" spacing={8}>
               <Text fontSize={14} fill={toHexSafe(t.label, FB)}>Fecha de creación</Text>
               <Input
                 value={createdDate}
                 onTextEditEnd={(ev) => setCreatedDate(ev.characters)}
                 placeholder="dd/mm/yyyy"
                 fontSize={14}
-                fill={toHexSafe(t.fieldText, FB)}
+                fill={toHexSafe(t.value, FB)}
                 width="fill-parent"
                 inputFrameProps={inputFrame()}
               />
             </AutoLayout>
-            <AutoLayout direction="vertical" width="fill-parent" spacing={8}>
+            <AutoLayout name="Form / Product Manager Field" direction="vertical" width="fill-parent" spacing={8}>
               <Text fontSize={14} fill={toHexSafe(t.label, FB)}>Product manager</Text>
               <Input
                 value={productManager}
                 onTextEditEnd={(ev) => setProductManager(ev.characters)}
                 placeholder="Nombre"
                 fontSize={14}
-                fill={toHexSafe(t.fieldText, FB)}
+                fill={toHexSafe(t.value, FB)}
                 width="fill-parent"
                 inputFrameProps={inputFrame()}
               />
             </AutoLayout>
           </AutoLayout>
-          <AutoLayout direction="vertical" width="fill-parent" spacing={8}>
+          <AutoLayout name="Form / Jira Field" direction="vertical" width="fill-parent" spacing={8}>
             <Text fontSize={14} fill={toHexSafe(t.label, FB)}>Jira URL</Text>
             <Input
               value={jiraUrl}
               onTextEditEnd={(ev) => setJiraUrl(ev.characters)}
               placeholder="https://..."
               fontSize={14}
-              fill={toHexSafe(t.fieldText, FB)}
+              fill={toHexSafe(t.value, FB)}
               width="fill-parent"
               inputFrameProps={inputFrame()}
             />
           </AutoLayout>
-          <AutoLayout direction="vertical" width="fill-parent" spacing={8}>
+          <AutoLayout name="Form / UI URL Field" direction="vertical" width="fill-parent" spacing={8}>
             <Text fontSize={14} fill={toHexSafe(t.label, FB)}>UI URL</Text>
             <Input
               value={uiUrl}
               onTextEditEnd={(ev) => setUiUrl(ev.characters)}
               placeholder="https://..."
               fontSize={14}
-              fill={toHexSafe(t.fieldText, FB)}
+              fill={toHexSafe(t.value, FB)}
               width="fill-parent"
               inputFrameProps={inputFrame()}
             />
           </AutoLayout>
-          <AutoLayout direction="vertical" width="fill-parent" spacing={8}>
+          <AutoLayout name="Form / UX URL Field" direction="vertical" width="fill-parent" spacing={8}>
             <Text fontSize={14} fill={toHexSafe(t.label, FB)}>UX URL</Text>
             <Input
               value={uxUrl}
               onTextEditEnd={(ev) => setUxUrl(ev.characters)}
               placeholder="https://..."
               fontSize={14}
-              fill={toHexSafe(t.fieldText, FB)}
+              fill={toHexSafe(t.value, FB)}
               width="fill-parent"
               inputFrameProps={inputFrame()}
             />
           </AutoLayout>
-          <AutoLayout direction="vertical" width="fill-parent" spacing={8}>
+          <AutoLayout name="Form / Owner Info" direction="vertical" width="fill-parent" spacing={8}>
             <Text fontSize={12} fill={toHexSafe(t.body, FB)}>Owner: {(d && d.name) || 'Ninguno'} (cambiar desde el menu)</Text>
           </AutoLayout>
-          <AutoLayout direction="horizontal" width="fill-parent" verticalAlignItems="center" spacing={GAP}>
+          <AutoLayout name="Form / Actions" direction="horizontal" width="fill-parent" verticalAlignItems="center" spacing={GAP}>
             <AutoLayout
+              name="Form / Toggle Group"
               direction="horizontal"
               spacing={10}
               verticalAlignItems="center"
               onClick={() => setIncludeInTizona(includeInTizona === true ? false : true)}
             >
               <AutoLayout
+                name="Form / Toggle Group / Checkbox"
                 width={20}
                 height={20}
                 cornerRadius={4}
@@ -315,8 +319,9 @@ function TaskCard() {
               </AutoLayout>
               <Text fontSize={14} fill={toHexSafe(t.value, FB)}>Añadir a Tizona</Text>
             </AutoLayout>
-            <AutoLayout width="fill-parent" height={1} />
+            <AutoLayout name="Form / Actions / Spacer" width="fill-parent" height={1} />
             <AutoLayout
+              name="Form / Actions / Save Button"
               padding={{ vertical: 14, horizontal: 24 }}
               cornerRadius={10}
               fill={toHexSafe('01A3FF', FB)}
@@ -336,6 +341,7 @@ function TaskCard() {
   if (isEmpty) {
     return (
       <AutoLayout
+        name="Task Card"
         direction="vertical"
         width={CARD_W}
         height={400}
@@ -349,13 +355,14 @@ function TaskCard() {
         spacing={32}
         padding={48}
       >
-        <AutoLayout direction="vertical" spacing={20} horizontalAlignItems="center">
-          <Image src={PLACEHOLDER_IMG} width={140} height={140} />
+        <AutoLayout name="Content" direction="vertical" spacing={20} horizontalAlignItems="center">
+          <Image name="Content / Illustration" src={PLACEHOLDER_IMG} width={140} height={140} />
           <Text fontSize={18} fontWeight={500} fill={toHexSafe(t.value, FB)}>
             Añade tu trabajo para compartir con el equipo
           </Text>
         </AutoLayout>
         <AutoLayout
+          name="Content / CTA"
           padding={{ vertical: 14, horizontal: 24 }}
           cornerRadius={10}
           fill={toHexSafe('01A3FF', FB)}
@@ -364,6 +371,10 @@ function TaskCard() {
           onClick={() => setEditMode(true)}
         >
           <Text fontSize={14} fontWeight={600} fill={toHexSafe('FFFFFF', FB)}>Add My Work Brief</Text>
+        </AutoLayout>
+        <AutoLayout name="Content / Spacer" width="fill-parent" height="fill-parent" />
+        <AutoLayout name="Content / Powered By" width="fill-parent" horizontalAlignItems="center">
+          <Text fontSize={11} fill={toHexSafe('9AA4B2', FB)}>Powered with 💜 by Violeta for UE</Text>
         </AutoLayout>
       </AutoLayout>
     )
@@ -380,6 +391,14 @@ function TaskCard() {
     !!(uxUrl && uxUrl.trim())
   const hasDesigner = !!designerKey && designerKey !== 'none'
 
+  const METADATA_NAMES: Record<string, string> = {
+    'Fecha de creación': 'Created Date',
+    'Product manager': 'Product Manager',
+    'Incluir en Tizona': 'Include In Tizona',
+    'Jira URL': 'Jira',
+    'UI URL': 'UI URL',
+    'UX URL': 'UX URL',
+  }
   const metadataRows: Array<{ label: string; value: string | FigmaDeclarativeNode }> = []
   if (createdDate && createdDate.trim()) metadataRows.push({ label: 'Fecha de creación', value: createdDate })
   if (productManager && productManager.trim()) metadataRows.push({ label: 'Product manager', value: productManager })
@@ -389,6 +408,7 @@ function TaskCard() {
       label: 'Jira URL',
       value: (
         <AutoLayout
+          name="Metadata / Jira / Link"
           direction="horizontal"
           height={36}
           padding={{ vertical: 0, horizontal: 16 }}
@@ -409,6 +429,7 @@ function TaskCard() {
       label: 'UI URL',
       value: (
         <AutoLayout
+          name="Metadata / UI URL / Link"
           direction="horizontal"
           height={36}
           padding={{ vertical: 0, horizontal: 16 }}
@@ -429,6 +450,7 @@ function TaskCard() {
       label: 'UX URL',
       value: (
         <AutoLayout
+          name="Metadata / UX URL / Link"
           direction="horizontal"
           height={36}
           padding={{ vertical: 0, horizontal: 16 }}
@@ -455,6 +477,7 @@ function TaskCard() {
 
   return (
     <AutoLayout
+      name="Task Card"
       direction="vertical"
       width={CARD_W}
       cornerRadius={32}
@@ -464,6 +487,7 @@ function TaskCard() {
       fill={toHexSafe(t.cardBg, FB)}
     >
       <AutoLayout
+        name="Header / Type Badge"
         width="fill-parent"
         height={50}
         fill={toHexSafe(TASK_STYLES[taskType]?.fill ?? 'E3B2FB', FB)}
@@ -474,26 +498,26 @@ function TaskCard() {
           {TASK_STYLES[taskType]?.label ?? 'UI  Task'}
         </Text>
       </AutoLayout>
-      <AutoLayout direction="vertical" width="fill-parent" padding={PADDING} spacing={GAP}>
+      <AutoLayout name="Content" direction="vertical" width="fill-parent" padding={PADDING} spacing={GAP}>
         {hasMain && (
-          <Text fontSize={34} fontWeight={600} fill={toHexSafe(t.title, FB)} width="fill-parent">
+          <Text name="Content / Title" fontSize={34} fontWeight={600} fill={toHexSafe(t.title, FB)} width="fill-parent">
             {title}
           </Text>
         )}
         {hasDesc && (
-          <Text fontSize={16} fontWeight={400} fill={toHexSafe(t.body, FB)} width="fill-parent">
+          <Text name="Content / Description" fontSize={16} fontWeight={400} fill={toHexSafe(t.body, FB)} width="fill-parent">
             {description}
           </Text>
         )}
         {showDivBeforeMeta && (
-          <Rectangle width="fill-parent" height={1} fill={toHexSafe(t.divider, FB)} />
+          <Rectangle name="Content / Divider" width="fill-parent" height={1} fill={toHexSafe(t.divider, FB)} />
         )}
         {metadataRows.length > 0 && (
-          <AutoLayout direction="vertical" width="fill-parent" spacing={16}>
+          <AutoLayout name="Content / Metadata" direction="vertical" width="fill-parent" spacing={16}>
             {metadataRows.map((r) => (
-              <AutoLayout key={r.label} direction="horizontal" width="fill-parent" verticalAlignItems="center">
+              <AutoLayout key={r.label} name={`Metadata / ${METADATA_NAMES[r.label] ?? r.label}`} direction="horizontal" width="fill-parent" verticalAlignItems="center">
                 <Text fontSize={16} fontWeight={400} fill={toHexSafe(t.label, FB)}>{r.label}</Text>
-                <AutoLayout width="fill-parent" height={1} />
+                <AutoLayout name="Metadata / Spacer" width="fill-parent" height={1} />
                 {typeof r.value === 'string' ? (
                   <Text fontSize={16} fontWeight={400} fill={toHexSafe(t.value, FB)}>{r.value}</Text>
                 ) : (
@@ -504,16 +528,16 @@ function TaskCard() {
           </AutoLayout>
         )}
         {showDivBeforeFooter && (
-          <Rectangle width="fill-parent" height={1} fill={toHexSafe(t.divider, FB)} />
+          <Rectangle name="Content / Divider" width="fill-parent" height={1} fill={toHexSafe(t.divider, FB)} />
         )}
         {hasFooter && (
-        <AutoLayout direction="horizontal" width="fill-parent" verticalAlignItems="center">
+        <AutoLayout name="Footer" direction="horizontal" width="fill-parent" verticalAlignItems="center">
           {hasDesigner && d && (
-            <AutoLayout direction="horizontal" spacing={16} verticalAlignItems="center">
+            <AutoLayout name="Footer / Designer" direction="horizontal" spacing={16} verticalAlignItems="center">
               {AVATARS[d.key] ? (
                 <>
-                  <Image src={AVATARS[d.key]} width={54} height={54} cornerRadius={27} />
-                  <AutoLayout direction="vertical" spacing={2}>
+                  <Image name="Footer / Designer / Avatar" src={AVATARS[d.key]} width={54} height={54} cornerRadius={27} />
+                  <AutoLayout name="Footer / Designer / Info" direction="vertical" spacing={2}>
                     <Text fontSize={14} fontWeight={400} fill={toHexSafe(t.label, FB)}>{d.role}</Text>
                     <Text fontSize={16} fontWeight={400} fill={toHexSafe(t.value, FB)}>{d.name}</Text>
                   </AutoLayout>
@@ -521,6 +545,7 @@ function TaskCard() {
               ) : (
                 <>
                   <AutoLayout
+                    name="Footer / Designer / Avatar Placeholder"
                     width={54}
                     height={54}
                     cornerRadius={27}
@@ -532,7 +557,7 @@ function TaskCard() {
                       {d.name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2)}
                     </Text>
                   </AutoLayout>
-                  <AutoLayout direction="vertical" spacing={2}>
+                  <AutoLayout name="Footer / Designer / Info" direction="vertical" spacing={2}>
                     <Text fontSize={14} fontWeight={400} fill={toHexSafe(t.label, FB)}>{d.role}</Text>
                     <Text fontSize={16} fontWeight={400} fill={toHexSafe(t.value, FB)}>{d.name}</Text>
                   </AutoLayout>
@@ -540,9 +565,10 @@ function TaskCard() {
               )}
             </AutoLayout>
           )}
-          <AutoLayout width="fill-parent" height={1} />
+          <AutoLayout name="Footer / Spacer" width="fill-parent" height={1} />
           {hasStatus && st && (
           <AutoLayout
+            name="Footer / Status"
             direction="horizontal"
             height={36}
             padding={{ vertical: 0, horizontal: 12 }}
