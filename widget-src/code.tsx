@@ -368,14 +368,14 @@ function DefaultWidget() {
         height={uiTokens.btnH}
         padding={{ vertical: 6, horizontal: 16 }}
         cornerRadius={uiTokens.radiusBtn}
-        fill={toHexSafe(t.btnDefault, FB)}
+        fill={toHexSafe('01A3FF', FB)}
         horizontalAlignItems="center"
         verticalAlignItems="center"
         spacing={10}
         onClick={() => figma.openExternal(url)}
       >
         <SVG src={LINK_ICON} width={18} height={18} />
-        <Text fontSize={16} fontWeight={500} fill={toHexSafe(t.btnDefaultText, FB)}>
+        <Text fontSize={16} fontWeight={500} fill={toHexSafe('FFFFFF', FB)}>
           {label}
         </Text>
       </AutoLayout>
