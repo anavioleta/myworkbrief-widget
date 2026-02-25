@@ -16,6 +16,6 @@
     "allowedDomains": [
       "*"
     ],
-    "reasoning": "El widget abre enlaces externos (Jira, prototipos de Figma, etc.) mediante figma.openExternal()."
+    "reasoning": "The widget opens external links (Jira, Figma prototypes, etc.) via figma.openExternal()."
   }
 }

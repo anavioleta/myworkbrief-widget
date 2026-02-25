@@ -1,5 +1,5 @@
 import { AVATARS } from './avatars'
-import { PLACEHOLDER_IMG } from './placeholder-img'
+import { AVATAR_DEFAULT } from './assets'
 import { STATUS_ICONS, LINK_ICON } from './status-icons'
 
 const { widget } = figma
@@ -18,9 +18,22 @@ type Theme = 'light' | 'dark'
 type TaskType = 'UI' | 'UX' | 'CRO'
 type Status = 'none' | 'Paused' | 'In progress' | 'Archived' | 'Shipped'
 
-const CARD_W = 600
-const PADDING = 32
-const GAP = 24
+const uiTokens = {
+  cardW: 600,
+  padding: 32,
+  gap: 24,
+  gapMeta: 16,
+  radius: 32,
+  radiusBtn: 8,
+  radiusPill: 100,
+  headerH: 50,
+  btnH: 36,
+  avatarSize: 54,
+} as const
+
+const CARD_W = uiTokens.cardW
+const PADDING = uiTokens.padding
+const GAP = uiTokens.gap
 
 const DESIGNERS = [
   { key: 'none', name: '', role: '' },
@@ -53,6 +66,9 @@ function tokens(theme: Theme) {
     fieldBg: light ? 'F9FAFB' : '111B2E',
     fieldBorder: light ? 'CDD5DF' : '334155',
     fieldText: light ? '697586' : 'A3B1C6',
+    btnDefault: light ? 'CDD5DF' : '475569',
+    btnDefaultText: 'FFFFFF',
+    avatarPlaceholder: light ? '64748B' : '475569',
   }
 }
 
@@ -69,7 +85,7 @@ const STATUS_STYLES: Record<Exclude<Status, 'none'>, { bg: string; fg: string; l
   Shipped: { bg: '99E5DB', fg: '3B786F', label: 'Shipped' },
 }
 
-function TaskCard() {
+function DefaultWidget() {
   const [theme, setTheme] = useSyncedState<Theme>('theme', 'light')
   const [editMode, setEditMode] = useSyncedState('editMode', false)
   const [taskType, setTaskType] = useSyncedState<TaskType>('taskType', 'UI')
@@ -92,14 +108,14 @@ function TaskCard() {
       {
         itemType: 'toggle',
         propertyName: 'editMode',
-        tooltip: editMode ? 'Cerrar edicion' : 'Editar',
+        tooltip: editMode ? 'Close edit' : 'Edit',
         isToggled: editMode,
       },
       { itemType: 'separator' },
       {
         itemType: 'dropdown',
         propertyName: 'theme',
-        tooltip: 'Tema',
+        tooltip: 'Theme',
         selectedOption: theme,
         options: [
           { option: 'light', label: 'Light' },
@@ -156,7 +172,7 @@ function TaskCard() {
       return
     }
     setEditMode(false)
-    figma.notify('Cambios guardados')
+    figma.notify('Changes saved')
   }
 
   const inputFrame = () => ({
@@ -204,7 +220,7 @@ function TaskCard() {
             <Input
               value={title}
               onTextEditEnd={(ev) => setTitle(ev.characters)}
-              placeholder="Añade el título..."
+              placeholder="Add the title..."
               fontSize={14}
               fill={toHexSafe(t.value, FB)}
               width="fill-parent"
@@ -220,7 +236,7 @@ function TaskCard() {
             <Input
               value={(description || '').slice(0, 350)}
               onTextEditEnd={(ev) => setDescription((ev.characters || '').slice(0, 350))}
-              placeholder="Añade la descripción breve del proyecto..."
+              placeholder="Add a brief project description..."
               fontSize={14}
               fill={toHexSafe(t.value, FB)}
               width="fill-parent"
@@ -231,7 +247,7 @@ function TaskCard() {
           </AutoLayout>
           <AutoLayout name="Form / Meta Row" direction="horizontal" width="fill-parent" spacing={GAP}>
             <AutoLayout name="Form / Created Date Field" direction="vertical" width="fill-parent" spacing={8}>
-              <Text fontSize={14} fill={toHexSafe(t.label, FB)}>Fecha de creación</Text>
+              <Text fontSize={14} fill={toHexSafe(t.label, FB)}>Creation date</Text>
               <Input
                 value={createdDate}
                 onTextEditEnd={(ev) => setCreatedDate(ev.characters)}
@@ -247,7 +263,7 @@ function TaskCard() {
               <Input
                 value={productManager}
                 onTextEditEnd={(ev) => setProductManager(ev.characters)}
-                placeholder="Nombre"
+                placeholder="Name"
                 fontSize={14}
                 fill={toHexSafe(t.value, FB)}
                 width="fill-parent"
@@ -292,7 +308,7 @@ function TaskCard() {
             />
           </AutoLayout>
           <AutoLayout name="Form / Owner Info" direction="vertical" width="fill-parent" spacing={8}>
-            <Text fontSize={12} fill={toHexSafe(t.body, FB)}>Owner: {(d && d.name) || 'Ninguno'} (cambiar desde el menu)</Text>
+            <Text fontSize={12} fill={toHexSafe(t.body, FB)}>Owner: {(d && d.name) || 'None'} (change from menu)</Text>
           </AutoLayout>
           <AutoLayout name="Form / Actions" direction="horizontal" width="fill-parent" verticalAlignItems="center" spacing={GAP}>
             <AutoLayout
@@ -317,7 +333,7 @@ function TaskCard() {
                   <Text fontSize={12} fontWeight={700} fill={toHexSafe('FFFFFF', FB)}>✓</Text>
                 )}
               </AutoLayout>
-              <Text fontSize={14} fill={toHexSafe(t.value, FB)}>Añadir a Tizona</Text>
+              <Text fontSize={14} fill={toHexSafe(t.value, FB)}>Add to Tizona</Text>
             </AutoLayout>
             <AutoLayout name="Form / Actions / Spacer" width="fill-parent" height={1} />
             <AutoLayout
@@ -329,7 +345,7 @@ function TaskCard() {
               verticalAlignItems="center"
               onClick={handleSave}
             >
-              <Text fontSize={14} fontWeight={600} fill={toHexSafe('FFFFFF', FB)}>Guardar cambios</Text>
+              <Text fontSize={14} fontWeight={600} fill={toHexSafe('FFFFFF', FB)}>Save changes</Text>
             </AutoLayout>
           </AutoLayout>
         </AutoLayout>
@@ -337,143 +353,68 @@ function TaskCard() {
     )
   }
 
-  const isEmpty = !title || !title.trim()
-  if (isEmpty) {
-    return (
+  const displayTitle = (title && title.trim()) || "Here's where your super awesome title goes"
+  const displayDesc =
+    (description && description.trim()) ||
+    `Ahh. Well, ma, we talked about this, we're not gonna go to the lake, the car's wrecked. Listen, Doc. Uh, I think so. Weight has nothing to do with it.`
+  const displayDate = (createdDate && createdDate.trim()) || 'dd/mm/yyy'
+  const displayPM = (productManager && productManager.trim()) || 'Name of product manager'
+
+  const linkBtn = (url: string, label: string, name: string) =>
+    url && url.trim() ? (
       <AutoLayout
-        name="Task Card"
-        direction="vertical"
-        width={CARD_W}
-        height={400}
-        cornerRadius={32}
-        overflow="hidden"
-        stroke={toHexSafe(t.cardBorder, FB)}
-        strokeWidth={1}
-        fill={toHexSafe('FFFFFF', FB)}
+        name={name}
+        direction="horizontal"
+        height={uiTokens.btnH}
+        padding={{ vertical: 6, horizontal: 16 }}
+        cornerRadius={uiTokens.radiusBtn}
+        fill={toHexSafe(t.btnDefault, FB)}
         horizontalAlignItems="center"
         verticalAlignItems="center"
-        spacing={32}
-        padding={48}
+        spacing={10}
+        onClick={() => figma.openExternal(url)}
       >
-        <AutoLayout name="Content" direction="vertical" spacing={20} horizontalAlignItems="center">
-          <Image name="Content / Illustration" src={PLACEHOLDER_IMG} width={140} height={140} />
-          <Text fontSize={18} fontWeight={500} fill={toHexSafe(t.value, FB)}>
-            Añade tu trabajo para compartir con el equipo
-          </Text>
-        </AutoLayout>
-        <AutoLayout
-          name="Content / CTA"
-          padding={{ vertical: 14, horizontal: 24 }}
-          cornerRadius={10}
-          fill={toHexSafe('01A3FF', FB)}
-          horizontalAlignItems="center"
-          verticalAlignItems="center"
-          onClick={() => setEditMode(true)}
-        >
-          <Text fontSize={14} fontWeight={600} fill={toHexSafe('FFFFFF', FB)}>Add My Work Brief</Text>
-        </AutoLayout>
-        <AutoLayout name="Content / Spacer" width="fill-parent" height="fill-parent" />
-        <AutoLayout name="Content / Powered By" width="fill-parent" horizontalAlignItems="center">
-          <Text fontSize={11} fill={toHexSafe('9AA4B2', FB)}>Powered with 💜 by Violeta for UE</Text>
-        </AutoLayout>
+        <SVG src={LINK_ICON} width={18} height={18} />
+        <Text fontSize={16} fontWeight={500} fill={toHexSafe(t.btnDefaultText, FB)}>
+          {label}
+        </Text>
+      </AutoLayout>
+    ) : (
+      <AutoLayout
+        name={name}
+        direction="horizontal"
+        height={uiTokens.btnH}
+        padding={{ vertical: 6, horizontal: 16 }}
+        cornerRadius={uiTokens.radiusBtn}
+        fill={toHexSafe(t.btnDefault, FB)}
+        horizontalAlignItems="center"
+        verticalAlignItems="center"
+        spacing={10}
+      >
+        <SVG src={LINK_ICON} width={18} height={18} />
+        <Text fontSize={16} fontWeight={500} fill={toHexSafe(t.btnDefaultText, FB)}>
+          {label}
+        </Text>
       </AutoLayout>
     )
-  }
 
-  const hasMain = !!(title && title.trim())
-  const hasDesc = !!(description && description.trim())
-  const hasMetadata =
-    !!(createdDate && createdDate.trim()) ||
-    !!(productManager && productManager.trim()) ||
-    includeInTizona === true ||
-    !!(jiraUrl && jiraUrl.trim()) ||
-    !!(uiUrl && uiUrl.trim()) ||
-    !!(uxUrl && uxUrl.trim())
-  const hasDesigner = !!designerKey && designerKey !== 'none'
-
-  const METADATA_NAMES: Record<string, string> = {
-    'Fecha de creación': 'Created Date',
-    'Product manager': 'Product Manager',
-    'Incluir en Tizona': 'Include In Tizona',
-    'Jira URL': 'Jira',
-    'UI URL': 'UI URL',
-    'UX URL': 'UX URL',
+  const metadataRows: Array<{ label: string; value: string | FigmaDeclarativeNode }> = [
+    { label: 'Creation date', value: displayDate },
+    { label: 'Product manager', value: displayPM },
+    { label: 'Jira URL', value: linkBtn(jiraUrl, 'Visit Jira', 'Metadata / Jira / Link') },
+    {
+      label: 'UX URL prototype',
+      value: linkBtn(uxUrl, 'Visit UX prototype', 'Metadata / UX URL / Link'),
+    },
+  ]
+  if (includeInTizona === true) {
+    metadataRows.splice(2, 0, { label: 'Include in Tizona', value: 'Yes' })
   }
-  const metadataRows: Array<{ label: string; value: string | FigmaDeclarativeNode }> = []
-  if (createdDate && createdDate.trim()) metadataRows.push({ label: 'Fecha de creación', value: createdDate })
-  if (productManager && productManager.trim()) metadataRows.push({ label: 'Product manager', value: productManager })
-  if (includeInTizona === true) metadataRows.push({ label: 'Incluir en Tizona', value: 'Si' })
-  if (jiraUrl && jiraUrl.trim())
-    metadataRows.push({
-      label: 'Jira URL',
-      value: (
-        <AutoLayout
-          name="Metadata / Jira / Link"
-          direction="horizontal"
-          height={36}
-          padding={{ vertical: 0, horizontal: 16 }}
-          cornerRadius={8}
-          fill={toHexSafe('01A3FF', FB)}
-          horizontalAlignItems="center"
-          verticalAlignItems="center"
-          spacing={8}
-          onClick={() => figma.openExternal(jiraUrl)}
-        >
-          <SVG src={LINK_ICON} width={16} height={16} />
-          <Text fontSize={16} fontWeight={500} fill={toHexSafe('FFFFFF', FB)}>Visitar Jira</Text>
-        </AutoLayout>
-      ),
-    })
-  if (uiUrl && uiUrl.trim())
-    metadataRows.push({
-      label: 'UI URL',
-      value: (
-        <AutoLayout
-          name="Metadata / UI URL / Link"
-          direction="horizontal"
-          height={36}
-          padding={{ vertical: 0, horizontal: 16 }}
-          cornerRadius={8}
-          fill={toHexSafe('01A3FF', FB)}
-          horizontalAlignItems="center"
-          verticalAlignItems="center"
-          spacing={8}
-          onClick={() => figma.openExternal(uiUrl)}
-        >
-          <SVG src={LINK_ICON} width={16} height={16} />
-          <Text fontSize={16} fontWeight={500} fill={toHexSafe('FFFFFF', FB)}>Visitar prototipo de UI</Text>
-        </AutoLayout>
-      ),
-    })
-  if (uxUrl && uxUrl.trim())
-    metadataRows.push({
-      label: 'UX URL',
-      value: (
-        <AutoLayout
-          name="Metadata / UX URL / Link"
-          direction="horizontal"
-          height={36}
-          padding={{ vertical: 0, horizontal: 16 }}
-          cornerRadius={8}
-          fill={toHexSafe('01A3FF', FB)}
-          horizontalAlignItems="center"
-          verticalAlignItems="center"
-          spacing={8}
-          onClick={() => figma.openExternal(uxUrl)}
-        >
-          <SVG src={LINK_ICON} width={16} height={16} />
-          <Text fontSize={16} fontWeight={500} fill={toHexSafe('FFFFFF', FB)}>Visitar prototipo de UX</Text>
-        </AutoLayout>
-      ),
-    })
 
   const d = DESIGNERS.find((x) => x.key === designerKey && x.key !== 'none')
   const hasStatus = status !== undefined && status !== null && status !== '' && status !== 'none'
   const st = hasStatus && STATUS_STYLES[status] ? STATUS_STYLES[status] : null
-
-  const showDivBeforeMeta = (hasMain || hasDesc) && hasMetadata
-  const hasFooter = hasDesigner || hasStatus
-  const showDivBeforeFooter = (hasMain || hasDesc || hasMetadata) && hasFooter
+  const displayDesigner = d || { key: 'default', name: 'Designer name', role: 'UI Designer' }
 
   return (
     <AutoLayout
@@ -489,7 +430,7 @@ function TaskCard() {
       <AutoLayout
         name="Header / Type Badge"
         width="fill-parent"
-        height={50}
+        height={uiTokens.headerH}
         fill={toHexSafe(TASK_STYLES[taskType]?.fill ?? 'E3B2FB', FB)}
         horizontalAlignItems="center"
         verticalAlignItems="center"
@@ -499,96 +440,106 @@ function TaskCard() {
         </Text>
       </AutoLayout>
       <AutoLayout name="Content" direction="vertical" width="fill-parent" padding={PADDING} spacing={GAP}>
-        {hasMain && (
-          <Text name="Content / Title" fontSize={34} fontWeight={600} fill={toHexSafe(t.title, FB)} width="fill-parent">
-            {title}
-          </Text>
-        )}
-        {hasDesc && (
-          <Text name="Content / Description" fontSize={16} fontWeight={400} fill={toHexSafe(t.body, FB)} width="fill-parent">
-            {description}
-          </Text>
-        )}
-        {showDivBeforeMeta && (
-          <Rectangle name="Content / Divider" width="fill-parent" height={1} fill={toHexSafe(t.divider, FB)} />
-        )}
-        {metadataRows.length > 0 && (
-          <AutoLayout name="Content / Metadata" direction="vertical" width="fill-parent" spacing={16}>
-            {metadataRows.map((r) => (
-              <AutoLayout key={r.label} name={`Metadata / ${METADATA_NAMES[r.label] ?? r.label}`} direction="horizontal" width="fill-parent" verticalAlignItems="center">
-                <Text fontSize={16} fontWeight={400} fill={toHexSafe(t.label, FB)}>{r.label}</Text>
-                <AutoLayout name="Metadata / Spacer" width="fill-parent" height={1} />
-                {typeof r.value === 'string' ? (
-                  <Text fontSize={16} fontWeight={400} fill={toHexSafe(t.value, FB)}>{r.value}</Text>
-                ) : (
-                  r.value
-                )}
-              </AutoLayout>
-            ))}
-          </AutoLayout>
-        )}
-        {showDivBeforeFooter && (
-          <Rectangle name="Content / Divider" width="fill-parent" height={1} fill={toHexSafe(t.divider, FB)} />
-        )}
-        {hasFooter && (
-        <AutoLayout name="Footer" direction="horizontal" width="fill-parent" verticalAlignItems="center">
-          {hasDesigner && d && (
-            <AutoLayout name="Footer / Designer" direction="horizontal" spacing={16} verticalAlignItems="center">
-              {AVATARS[d.key] ? (
-                <>
-                  <Image name="Footer / Designer / Avatar" src={AVATARS[d.key]} width={54} height={54} cornerRadius={27} />
-                  <AutoLayout name="Footer / Designer / Info" direction="vertical" spacing={2}>
-                    <Text fontSize={14} fontWeight={400} fill={toHexSafe(t.label, FB)}>{d.role}</Text>
-                    <Text fontSize={16} fontWeight={400} fill={toHexSafe(t.value, FB)}>{d.name}</Text>
-                  </AutoLayout>
-                </>
+        <Text name="Content / Title" fontSize={34} fontWeight={600} fill={toHexSafe(t.title, FB)} width="fill-parent">
+          {displayTitle}
+        </Text>
+        <Text name="Content / Description" fontSize={16} fontWeight={400} fill={toHexSafe(t.body, FB)} width="fill-parent">
+          {displayDesc}
+        </Text>
+        <Rectangle name="Content / Divider" width="fill-parent" height={1} fill={toHexSafe(t.divider, FB)} />
+        <AutoLayout name="Content / Metadata" direction="vertical" width="fill-parent" spacing={uiTokens.gapMeta}>
+          {metadataRows.map((r) => (
+            <AutoLayout
+              key={r.label}
+              name={`Metadata / ${r.label}`}
+              direction="horizontal"
+              width="fill-parent"
+              verticalAlignItems="center"
+            >
+              <Text fontSize={16} fontWeight={400} fill={toHexSafe(t.label, FB)}>
+                {r.label}
+              </Text>
+              <AutoLayout name="Metadata / Spacer" width="fill-parent" height={1} />
+              {typeof r.value === 'string' ? (
+                <Text fontSize={16} fontWeight={400} fill={toHexSafe(t.value, FB)}>
+                  {r.value}
+                </Text>
               ) : (
-                <>
-                  <AutoLayout
-                    name="Footer / Designer / Avatar Placeholder"
-                    width={54}
-                    height={54}
-                    cornerRadius={27}
-                    fill={toHexSafe('64748B', FB)}
-                    horizontalAlignItems="center"
-                    verticalAlignItems="center"
-                  >
-                    <Text fontSize={18} fontWeight={700} fill={toHexSafe('FFFFFF', FB)}>
-                      {d.name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2)}
-                    </Text>
-                  </AutoLayout>
-                  <AutoLayout name="Footer / Designer / Info" direction="vertical" spacing={2}>
-                    <Text fontSize={14} fontWeight={400} fill={toHexSafe(t.label, FB)}>{d.role}</Text>
-                    <Text fontSize={16} fontWeight={400} fill={toHexSafe(t.value, FB)}>{d.name}</Text>
-                  </AutoLayout>
-                </>
+                r.value
               )}
             </AutoLayout>
-          )}
+          ))}
+        </AutoLayout>
+        <Rectangle name="Content / Divider" width="fill-parent" height={1} fill={toHexSafe(t.divider, FB)} />
+        <AutoLayout name="Footer" direction="horizontal" width="fill-parent" verticalAlignItems="center">
+          <AutoLayout name="Footer / Designer" direction="horizontal" spacing={10} verticalAlignItems="center">
+            {displayDesigner && (AVATARS[displayDesigner.key] || (displayDesigner.key === 'default' && AVATAR_DEFAULT)) ? (
+              <>
+                <Image
+                  name="Footer / Designer / Avatar"
+                  src={AVATARS[displayDesigner.key] || AVATAR_DEFAULT}
+                  width={uiTokens.avatarSize}
+                  height={uiTokens.avatarSize}
+                  cornerRadius={uiTokens.avatarSize / 2}
+                />
+                <AutoLayout name="Footer / Designer / Info" direction="vertical" spacing={2}>
+                  <Text fontSize={14} fontWeight={400} fill={toHexSafe(t.label, FB)}>
+                    {displayDesigner.role}
+                  </Text>
+                  <Text fontSize={16} fontWeight={400} fill={toHexSafe(t.value, FB)}>
+                    {displayDesigner.name}
+                  </Text>
+                </AutoLayout>
+              </>
+            ) : (
+              <>
+                <AutoLayout
+                  name="Footer / Designer / Avatar Placeholder"
+                  width={uiTokens.avatarSize}
+                  height={uiTokens.avatarSize}
+                  cornerRadius={uiTokens.avatarSize / 2}
+                  fill={toHexSafe(t.avatarPlaceholder, FB)}
+                  horizontalAlignItems="center"
+                  verticalAlignItems="center"
+                >
+                  <Text fontSize={18} fontWeight={700} fill={toHexSafe('FFFFFF', FB)}>
+                    {displayDesigner.name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2)}
+                  </Text>
+                </AutoLayout>
+                <AutoLayout name="Footer / Designer / Info" direction="vertical" spacing={2}>
+                  <Text fontSize={14} fontWeight={400} fill={toHexSafe(t.label, FB)}>
+                    {displayDesigner.role}
+                  </Text>
+                  <Text fontSize={16} fontWeight={400} fill={toHexSafe(t.value, FB)}>
+                    {displayDesigner.name}
+                  </Text>
+                </AutoLayout>
+              </>
+            )}
+          </AutoLayout>
           <AutoLayout name="Footer / Spacer" width="fill-parent" height={1} />
-          {hasStatus && st && (
           <AutoLayout
             name="Footer / Status"
             direction="horizontal"
-            height={36}
+            height={uiTokens.btnH}
             padding={{ vertical: 0, horizontal: 12 }}
-            cornerRadius={100}
-            fill={toHexSafe(st.bg, FB)}
+            cornerRadius={uiTokens.radiusPill}
+            fill={toHexSafe((st && st.bg) || t.btnDefault, FB)}
             horizontalAlignItems="center"
             verticalAlignItems="center"
             spacing={8}
           >
-            {STATUS_ICONS[status] && (
+            {hasStatus && STATUS_ICONS[status] && (
               <SVG src={STATUS_ICONS[status]} width={18} height={18} />
             )}
-            <Text fontSize={14} fontWeight={600} fill={toHexSafe(st.fg, FB)}>{st.label}</Text>
+            <Text fontSize={16} fontWeight={600} fill={toHexSafe((st && st.fg) || t.btnDefaultText, FB)}>
+              {(st && st.label) || 'Status'}
+            </Text>
           </AutoLayout>
-          )}
         </AutoLayout>
-        )}
       </AutoLayout>
     </AutoLayout>
   )
 }
 
-widget.register(TaskCard)
+widget.register(DefaultWidget)
