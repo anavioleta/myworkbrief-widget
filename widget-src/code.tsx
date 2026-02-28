@@ -1,6 +1,16 @@
-import { AVATARS } from './avatars'
-import { AVATAR_DEFAULT } from './assets'
 import { STATUS_ICONS, LINK_ICON } from './status-icons'
+
+function getInitials(name: string): string {
+  const s = (name || '').trim()
+  if (!s) return 'NA'
+  const words = s.split(/\s+/).filter(Boolean)
+  if (words.length >= 2) {
+    const first = words[0][0] || ''
+    const last = words[words.length - 1][0] || ''
+    return (first + last).toUpperCase()
+  }
+  return (words[0].slice(0, 2) || 'NA').toUpperCase()
+}
 
 const { widget } = figma
 const {
@@ -10,7 +20,6 @@ const {
   Text,
   Input,
   Rectangle,
-  Image,
   SVG,
 } = widget
 
@@ -34,17 +43,6 @@ const uiTokens = {
 const CARD_W = uiTokens.cardW
 const PADDING = uiTokens.padding
 const GAP = uiTokens.gap
-
-const DESIGNERS = [
-  { key: 'none', name: '', role: '' },
-  { key: 'violeta', name: 'Violeta Hernández', role: 'UI Designer' },
-  { key: 'daniel', name: 'Daniel Cebrian', role: 'UI Designer' },
-  { key: 'fatima', name: 'Fatima Castilla', role: 'UX Designer' },
-  { key: 'carlos', name: 'Carlos Aguilera', role: 'UX Designer' },
-  { key: 'teresa', name: 'Teresa P\u00E9rez', role: 'CRO Specialist' },
-  { key: 'beatriz', name: 'Beatriz Saenz', role: 'Designer' },
-  { key: 'pascal', name: 'Pascal Marín', role: 'Designer' },
-]
 
 function toHexSafe(hex: string, fallbackHex: string): string {
   const raw = (hex ?? '').trim().replace('#', '')
@@ -98,7 +96,7 @@ function DefaultWidget() {
   const [jiraUrl, setJiraUrl] = useSyncedState('jiraUrl', '')
   const [uiUrl, setUiUrl] = useSyncedState('uiUrl', '')
   const [uxUrl, setUxUrl] = useSyncedState('uxUrl', '')
-  const [designerKey, setDesignerKey] = useSyncedState<string>('designerKey', 'none')
+  const [assignedTo, setAssignedTo] = useSyncedState('assignedTo', '')
 
   const t = tokens(theme)
   const FB = 'FFFFFF'
@@ -148,21 +146,12 @@ function DefaultWidget() {
           { option: 'Shipped', label: 'Shipped' },
         ],
       },
-      { itemType: 'separator' },
-      {
-        itemType: 'dropdown',
-        propertyName: 'designer',
-        tooltip: 'Owner',
-        selectedOption: designerKey,
-        options: DESIGNERS.map((d) => ({ option: d.key, label: d.key === 'none' ? 'None' : d.name })),
-      },
     ],
     (e) => {
       if (e.propertyName === 'editMode') setEditMode(!editMode)
       if (e.propertyName === 'theme' && e.propertyValue) setTheme(e.propertyValue as Theme)
       if (e.propertyName === 'taskType' && e.propertyValue) setTaskType(e.propertyValue as TaskType)
       if (e.propertyName === 'status' && e.propertyValue) setStatus(e.propertyValue as Status)
-      if (e.propertyName === 'designer' && e.propertyValue) setDesignerKey(e.propertyValue)
     },
   )
 
@@ -190,7 +179,6 @@ function DefaultWidget() {
   })
 
   if (editMode) {
-    const d = DESIGNERS.find((x) => x.key === designerKey)
     return (
       <AutoLayout
         name="Task Card"
@@ -307,8 +295,17 @@ function DefaultWidget() {
               inputFrameProps={inputFrame()}
             />
           </AutoLayout>
-          <AutoLayout name="Form / Owner Info" direction="vertical" width="fill-parent" spacing={8}>
-            <Text fontSize={12} fill={toHexSafe(t.body, FB)}>Owner: {(d && d.name) || 'None'} (change from menu)</Text>
+          <AutoLayout name="Form / Assigned To Field" direction="vertical" width="fill-parent" spacing={8}>
+            <Text fontSize={14} fill={toHexSafe(t.label, FB)}>Assigned to</Text>
+            <Input
+              value={assignedTo}
+              onTextEditEnd={(ev) => setAssignedTo(ev.characters)}
+              placeholder="Name of assignee"
+              fontSize={14}
+              fill={toHexSafe(t.value, FB)}
+              width="fill-parent"
+              inputFrameProps={inputFrame()}
+            />
           </AutoLayout>
           <AutoLayout name="Form / Actions" direction="horizontal" width="fill-parent" verticalAlignItems="center" spacing={GAP}>
             <AutoLayout
@@ -333,7 +330,7 @@ function DefaultWidget() {
                   <Text fontSize={12} fontWeight={700} fill={toHexSafe('FFFFFF', FB)}>✓</Text>
                 )}
               </AutoLayout>
-              <Text fontSize={14} fill={toHexSafe(t.value, FB)}>Add to Tizona</Text>
+              <Text fontSize={14} fill={toHexSafe(t.value, FB)}>Include in the Design System</Text>
             </AutoLayout>
             <AutoLayout name="Form / Actions / Spacer" width="fill-parent" height={1} />
             <AutoLayout
@@ -408,13 +405,16 @@ function DefaultWidget() {
     },
   ]
   if (includeInTizona === true) {
-    metadataRows.splice(2, 0, { label: 'Include in Tizona', value: 'Yes' })
+    metadataRows.splice(2, 0, { label: 'Include in the Design System', value: 'Yes' })
   }
 
-  const d = DESIGNERS.find((x) => x.key === designerKey && x.key !== 'none')
+  const assignedName = (assignedTo && assignedTo.trim()) || 'Unassigned'
   const hasStatus = status !== undefined && status !== null && status !== '' && status !== 'none'
   const st = hasStatus && STATUS_STYLES[status] ? STATUS_STYLES[status] : null
-  const displayDesigner = d || { key: 'default', name: 'Designer name', role: 'UI Designer' }
+  const light = theme === 'light' || theme !== 'dark'
+  const avatarSlate = light
+    ? { bg: 'E2E8F0', border: 'CBD5E1', initials: '334155' }
+    : { bg: '1E293B', border: '334155', initials: 'E2E8F0' }
 
   return (
     <AutoLayout
@@ -443,7 +443,7 @@ function DefaultWidget() {
         <Text name="Content / Title" fontSize={34} fontWeight={600} fill={toHexSafe(t.title, FB)} width="fill-parent">
           {displayTitle}
         </Text>
-        <Text name="Content / Description" fontSize={16} fontWeight={400} fill={toHexSafe(t.body, FB)} width="fill-parent">
+        <Text name="Content / Description" fontSize={16} fontWeight={400} lineHeight={28} fill={toHexSafe(t.body, FB)} width="fill-parent">
           {displayDesc}
         </Text>
         <Rectangle name="Content / Divider" width="fill-parent" height={1} fill={toHexSafe(t.divider, FB)} />
@@ -473,49 +473,29 @@ function DefaultWidget() {
         <Rectangle name="Content / Divider" width="fill-parent" height={1} fill={toHexSafe(t.divider, FB)} />
         <AutoLayout name="Footer" direction="horizontal" width="fill-parent" verticalAlignItems="center">
           <AutoLayout name="Footer / Designer" direction="horizontal" spacing={10} verticalAlignItems="center">
-            {displayDesigner && (AVATARS[displayDesigner.key] || (displayDesigner.key === 'default' && AVATAR_DEFAULT)) ? (
-              <>
-                <Image
-                  name="Footer / Designer / Avatar"
-                  src={AVATARS[displayDesigner.key] || AVATAR_DEFAULT}
-                  width={uiTokens.avatarSize}
-                  height={uiTokens.avatarSize}
-                  cornerRadius={uiTokens.avatarSize / 2}
-                />
-                <AutoLayout name="Footer / Designer / Info" direction="vertical" spacing={2}>
-                  <Text fontSize={14} fontWeight={400} fill={toHexSafe(t.label, FB)}>
-                    {displayDesigner.role}
-                  </Text>
-                  <Text fontSize={16} fontWeight={400} fill={toHexSafe(t.value, FB)}>
-                    {displayDesigner.name}
-                  </Text>
-                </AutoLayout>
-              </>
-            ) : (
-              <>
-                <AutoLayout
-                  name="Footer / Designer / Avatar Placeholder"
-                  width={uiTokens.avatarSize}
-                  height={uiTokens.avatarSize}
-                  cornerRadius={uiTokens.avatarSize / 2}
-                  fill={toHexSafe(t.avatarPlaceholder, FB)}
-                  horizontalAlignItems="center"
-                  verticalAlignItems="center"
-                >
-                  <Text fontSize={18} fontWeight={700} fill={toHexSafe('FFFFFF', FB)}>
-                    {displayDesigner.name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2)}
-                  </Text>
-                </AutoLayout>
-                <AutoLayout name="Footer / Designer / Info" direction="vertical" spacing={2}>
-                  <Text fontSize={14} fontWeight={400} fill={toHexSafe(t.label, FB)}>
-                    {displayDesigner.role}
-                  </Text>
-                  <Text fontSize={16} fontWeight={400} fill={toHexSafe(t.value, FB)}>
-                    {displayDesigner.name}
-                  </Text>
-                </AutoLayout>
-              </>
-            )}
+            <AutoLayout
+              name="Footer / Designer / Avatar"
+              width={uiTokens.avatarSize}
+              height={uiTokens.avatarSize}
+              cornerRadius={999}
+              fill={toHexSafe(avatarSlate.bg, FB)}
+              stroke={toHexSafe(avatarSlate.border, FB)}
+              strokeWidth={1}
+              horizontalAlignItems="center"
+              verticalAlignItems="center"
+            >
+              <Text fontSize={18} fontWeight={700} fill={toHexSafe(avatarSlate.initials, FB)}>
+                {getInitials(assignedName)}
+              </Text>
+            </AutoLayout>
+            <AutoLayout name="Footer / Designer / Info" direction="vertical" spacing={4} verticalAlignItems="center">
+              <Text fontSize={12} fontWeight={400} fill={toHexSafe(t.label, FB)}>
+                Assigned to
+              </Text>
+              <Text fontSize={16} fontWeight={400} fill={toHexSafe(t.value, FB)}>
+                {assignedName}
+              </Text>
+            </AutoLayout>
           </AutoLayout>
           <AutoLayout name="Footer / Spacer" width="fill-parent" height={1} />
           <AutoLayout
