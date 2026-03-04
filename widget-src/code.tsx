@@ -97,6 +97,7 @@ function DefaultWidget() {
   const [uiUrl, setUiUrl] = useSyncedState('uiUrl', '')
   const [uxUrl, setUxUrl] = useSyncedState('uxUrl', '')
   const [assignedTo, setAssignedTo] = useSyncedState('assignedTo', '')
+  const [hasBeenEdited, setHasBeenEdited] = useSyncedState('hasBeenEdited', false)
 
   const t = tokens(theme)
   const FB = 'FFFFFF'
@@ -160,6 +161,7 @@ function DefaultWidget() {
       figma.notify('Title is required')
       return
     }
+    setHasBeenEdited(true)
     setEditMode(false)
     figma.notify('Changes saved')
   }
@@ -351,8 +353,9 @@ function DefaultWidget() {
   }
 
   const displayTitle = (title && title.trim()) || "Here's where your super awesome title goes"
+  const hasDesc = !!(description && description.trim())
   const displayDesc =
-    (description && description.trim()) ||
+    hasDesc ? (description || '').trim() :
     `Ahh. Well, ma, we talked about this, we're not gonna go to the lake, the car's wrecked. Listen, Doc. Uh, I think so. Weight has nothing to do with it.`
   const displayDate = (createdDate && createdDate.trim()) || 'dd/mm/yyy'
   const displayPM = (productManager && productManager.trim()) || 'Name of product manager'
@@ -395,20 +398,17 @@ function DefaultWidget() {
       </AutoLayout>
     )
 
-  const metadataRows: Array<{ label: string; value: string | FigmaDeclarativeNode }> = [
-    { label: 'Creation date', value: displayDate },
-    { label: 'Product manager', value: displayPM },
-    { label: 'Jira URL', value: linkBtn(jiraUrl, 'Visit Jira', 'Metadata / Jira / Link') },
-    {
-      label: 'UX URL prototype',
-      value: linkBtn(uxUrl, 'Visit UX prototype', 'Metadata / UX URL / Link'),
-    },
-  ]
-  if (includeInTizona === true) {
-    metadataRows.splice(2, 0, { label: 'Include in the Design System', value: 'Yes' })
-  }
+  const showField = (value: string) => !hasBeenEdited || (!!value && !!value.trim())
+  const metadataRows: Array<{ label: string; value: string | FigmaDeclarativeNode }> = []
+  if (showField(createdDate)) metadataRows.push({ label: 'Creation date', value: displayDate })
+  if (showField(productManager)) metadataRows.push({ label: 'Product manager', value: displayPM })
+  if (includeInTizona === true) metadataRows.push({ label: 'Include in the Design System', value: 'Yes' })
+  if (showField(jiraUrl)) metadataRows.push({ label: 'Jira URL', value: linkBtn(jiraUrl, 'Visit Jira', 'Metadata / Jira / Link') })
+  if (showField(uxUrl)) metadataRows.push({ label: 'UX URL prototype', value: linkBtn(uxUrl, 'Visit UX prototype', 'Metadata / UX URL / Link') })
 
-  const assignedName = (assignedTo && assignedTo.trim()) || 'Unassigned'
+  const hasAssigned = !!(assignedTo && assignedTo.trim())
+  const assignedName = hasAssigned ? (assignedTo || '').trim() : 'Unassigned'
+  const showAssigned = !hasBeenEdited || hasAssigned
   const hasStatus = status !== undefined && status !== null && status !== '' && status !== 'none'
   const st = hasStatus && STATUS_STYLES[status] ? STATUS_STYLES[status] : null
   const light = theme === 'light' || theme !== 'dark'
@@ -443,12 +443,16 @@ function DefaultWidget() {
         <Text name="Content / Title" fontSize={34} fontWeight={600} fill={toHexSafe(t.title, FB)} width="fill-parent">
           {displayTitle}
         </Text>
-        <Text name="Content / Description" fontSize={16} fontWeight={400} lineHeight={28} fill={toHexSafe(t.body, FB)} width="fill-parent">
-          {displayDesc}
-        </Text>
-        <Rectangle name="Content / Divider" width="fill-parent" height={1} fill={toHexSafe(t.divider, FB)} />
-        <AutoLayout name="Content / Metadata" direction="vertical" width="fill-parent" spacing={uiTokens.gapMeta}>
-          {metadataRows.map((r) => (
+        {(!hasBeenEdited || hasDesc) && (
+          <Text name="Content / Description" fontSize={16} fontWeight={400} lineHeight={28} fill={toHexSafe(t.body, FB)} width="fill-parent">
+            {displayDesc}
+          </Text>
+        )}
+        {metadataRows.length > 0 && (
+          <>
+            <Rectangle name="Content / Divider" width="fill-parent" height={1} fill={toHexSafe(t.divider, FB)} />
+            <AutoLayout name="Content / Metadata" direction="vertical" width="fill-parent" spacing={uiTokens.gapMeta}>
+              {metadataRows.map((r) => (
             <AutoLayout
               key={r.label}
               name={`Metadata / ${r.label}`}
@@ -469,34 +473,38 @@ function DefaultWidget() {
               )}
             </AutoLayout>
           ))}
-        </AutoLayout>
+            </AutoLayout>
+          </>
+        )}
         <Rectangle name="Content / Divider" width="fill-parent" height={1} fill={toHexSafe(t.divider, FB)} />
         <AutoLayout name="Footer" direction="horizontal" width="fill-parent" verticalAlignItems="center">
-          <AutoLayout name="Footer / Designer" direction="horizontal" spacing={10} verticalAlignItems="center">
-            <AutoLayout
-              name="Footer / Designer / Avatar"
-              width={uiTokens.avatarSize}
-              height={uiTokens.avatarSize}
-              cornerRadius={999}
-              fill={toHexSafe(avatarSlate.bg, FB)}
-              stroke={toHexSafe(avatarSlate.border, FB)}
-              strokeWidth={1}
-              horizontalAlignItems="center"
-              verticalAlignItems="center"
-            >
-              <Text fontSize={18} fontWeight={700} fill={toHexSafe(avatarSlate.initials, FB)}>
-                {getInitials(assignedName)}
-              </Text>
+          {showAssigned && (
+            <AutoLayout name="Footer / Designer" direction="horizontal" spacing={10} verticalAlignItems="center">
+              <AutoLayout
+                name="Footer / Designer / Avatar"
+                width={uiTokens.avatarSize}
+                height={uiTokens.avatarSize}
+                cornerRadius={999}
+                fill={toHexSafe(avatarSlate.bg, FB)}
+                stroke={toHexSafe(avatarSlate.border, FB)}
+                strokeWidth={1}
+                horizontalAlignItems="center"
+                verticalAlignItems="center"
+              >
+                <Text fontSize={18} fontWeight={700} fill={toHexSafe(avatarSlate.initials, FB)}>
+                  {getInitials(assignedName)}
+                </Text>
+              </AutoLayout>
+              <AutoLayout name="Footer / Designer / Info" direction="vertical" spacing={4} verticalAlignItems="center">
+                <Text fontSize={12} fontWeight={400} fill={toHexSafe(t.label, FB)}>
+                  Assigned to
+                </Text>
+                <Text fontSize={16} fontWeight={400} fill={toHexSafe(t.value, FB)}>
+                  {assignedName}
+                </Text>
+              </AutoLayout>
             </AutoLayout>
-            <AutoLayout name="Footer / Designer / Info" direction="vertical" spacing={4} verticalAlignItems="center">
-              <Text fontSize={12} fontWeight={400} fill={toHexSafe(t.label, FB)}>
-                Assigned to
-              </Text>
-              <Text fontSize={16} fontWeight={400} fill={toHexSafe(t.value, FB)}>
-                {assignedName}
-              </Text>
-            </AutoLayout>
-          </AutoLayout>
+          )}
           <AutoLayout name="Footer / Spacer" width="fill-parent" height={1} />
           <AutoLayout
             name="Footer / Status"
