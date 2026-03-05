@@ -262,7 +262,7 @@ function DefaultWidget() {
             </AutoLayout>
           </AutoLayout>
           <AutoLayout name="Form / Jira Field" direction="vertical" width="fill-parent" spacing={8}>
-            <Text fontSize={14} fill={toHexSafe(t.label, FB)}>Jira URL</Text>
+            <Text fontSize={14} fill={toHexSafe(t.label, FB)}>Jira</Text>
             <Input
               value={jiraUrl}
               onTextEditEnd={(ev) => setJiraUrl(ev.characters)}
@@ -274,7 +274,7 @@ function DefaultWidget() {
             />
           </AutoLayout>
           <AutoLayout name="Form / UI URL Field" direction="vertical" width="fill-parent" spacing={8}>
-            <Text fontSize={14} fill={toHexSafe(t.label, FB)}>UI URL</Text>
+            <Text fontSize={14} fill={toHexSafe(t.label, FB)}>UI Prototype</Text>
             <Input
               value={uiUrl}
               onTextEditEnd={(ev) => setUiUrl(ev.characters)}
@@ -286,7 +286,7 @@ function DefaultWidget() {
             />
           </AutoLayout>
           <AutoLayout name="Form / UX URL Field" direction="vertical" width="fill-parent" spacing={8}>
-            <Text fontSize={14} fill={toHexSafe(t.label, FB)}>UX URL</Text>
+            <Text fontSize={14} fill={toHexSafe(t.label, FB)}>UX Prototype</Text>
             <Input
               value={uxUrl}
               onTextEditEnd={(ev) => setUxUrl(ev.characters)}
@@ -403,8 +403,9 @@ function DefaultWidget() {
   if (showField(createdDate)) metadataRows.push({ label: 'Creation date', value: displayDate })
   if (showField(productManager)) metadataRows.push({ label: 'Product manager', value: displayPM })
   if (includeInTizona === true) metadataRows.push({ label: 'Include in the Design System', value: 'Yes' })
-  if (showField(jiraUrl)) metadataRows.push({ label: 'Jira URL', value: linkBtn(jiraUrl, 'Visit Jira', 'Metadata / Jira / Link') })
-  if (showField(uxUrl)) metadataRows.push({ label: 'UX URL prototype', value: linkBtn(uxUrl, 'Visit UX prototype', 'Metadata / UX URL / Link') })
+  if (showField(jiraUrl)) metadataRows.push({ label: 'Jira', value: linkBtn(jiraUrl, 'Visit Jira', 'Metadata / Jira / Link') })
+  if (showField(uiUrl)) metadataRows.push({ label: 'UI Prototype', value: linkBtn(uiUrl, 'Visit UI Prototype', 'Metadata / UI Prototype / Link') })
+  if (showField(uxUrl)) metadataRows.push({ label: 'UX Prototype', value: linkBtn(uxUrl, 'Visit UX Prototype', 'Metadata / UX Prototype / Link') })
 
   const hasAssigned = !!(assignedTo && assignedTo.trim())
   const assignedName = hasAssigned ? (assignedTo || '').trim() : 'Unassigned'
